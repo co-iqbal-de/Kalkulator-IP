@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP & Subnet Calculator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background particles */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background-image: 
+                radial-gradient(circle, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                radial-gradient(circle, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 50px 50px, 80px 80px;
+            background-position: 0 0, 40px 40px;
+            animation: moveBackground 20s linear infinite;
+        }
+
+        @keyframes moveBackground {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .container {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 480px;
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 1;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888888;
+            font-size: 14px;
+            margin-top: -15px;
+            margin-bottom: 25px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 16px;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            transition: all 0.3s ease;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            font-size: 16px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-calculate {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
+        }
+
+        .btn-reset {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-reset:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .result {
+            margin-top: 25px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            padding: 12px 16px;
+            border-radius: 12px 12px 0 0;
+            color: white;
+            font-weight: 600;
+            text-align: center;
+            font-size: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: none;
+        }
+
+        .result-body {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 0 0 12px 12px;
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: none;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background 0.2s ease;
+        }
+
+        .row:last-child {
+            border-bottom: none;
+        }
+
+        .row:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .label {
+            color: #888888;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .label-icon {
+            width: 8px;
+            height: 8px;
+            background: #666666;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .value {
+            font-weight: 600;
+            color: #ffffff;
+            text-align: right;
+            max-width: 60%;
+            word-break: break-word;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #888888;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .copy-btn.copied {
+            background: rgba(34, 197, 94, 0.3);
+            border-color: rgba(34, 197, 94, 0.5);
+            color: #86efac;
+        }
+
+        .error {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 10px;
+            color: #fca5a5;
+            text-align: center;
+            font-size: 14px;
+            animation: shake 0.5s ease-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .history-section {
+            margin-top: 25px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .history-title {
+            color: #888888;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .clear-history {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .clear-history:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .history-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            color: #ffffff;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(4px);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            margin: 0 auto;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-5px);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 10;
+        }
+
+        .tooltip:hover::after {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-8px);
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px 20px;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🌐 IP & Subnet Calculator</h2>
+    <p class="subtitle">Hitung informasi network dengan mudah</p>
+
+    <form method="post" id="calcForm">
+        <div class="input-group">
+            <input 
+                name="ip" 
+                id="ipInput"
+                placeholder="Contoh: 192.168.1.10/24" 
+                required
+                autocomplete="off"
+            >
+        </div>
+
+        <div class="button-group">
+            <button type="submit" class="btn-calculate">
+                <span>🔍 Hitung</span>
+            </button>
+            <button type="button" class="btn-reset" onclick="resetForm()">
+                <span>🔄 Reset</span>
+            </button>
+        </div>
+    </form>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    {% if error %}
+        <div class="error">❌ {{ error }}</div>
+    {% endif %}
+
+    {% if hasil %}
+        <div class="result">
+            <div class="result-header">
+                📊 Hasil Perhitungan
+            </div>
+            <div class="result-body">
+                <div class="row">
+                    <span class="label">
+                        <span class="label-icon"></span>
+                        <span class="tooltip" data-tooltip="IP Address yang dimasukkan">IP Address</span>
+                    </span>
+                    <span class="value">
+                        {{ hasil.ip }}
+                        <button class="copy-btn" onclick="copyToClipboard('{{ hasil.ip }}', this)">Copy</button>
+                    </span>
+                </div>
+                <div class="row">
+                    <span class="label">
+                        <span class="label-icon"></span>
+                        <span class="tooltip" data-tooltip="Prefix length / CIDR notation">Prefix</span>
+                    </span>
+                    <span class="value">
+                        /{{ hasil.prefix }}
+                        <button class="copy-btn" onclick="copyToClipboard('/{{ hasil.prefix }}', this)">Copy</button>
+                    </span>
+                </div>
+                <div class="row">
+                    <span class="label">
+                        <span class="label-icon"></span>
+                        <span class="tooltip" data-tooltip="Subnet mask dalam format desimal">Subnet Mask</span>
+                    </span>
+                    <span class="value">
+                        {{ hasil.netmask }}
+                        <button class="copy-btn" onclick="copyToClipboard('{{ hasil.netmask }}', this)">Copy</button>
+                    </span>
+                </div>
+                <div class="row">
+                    <span class="label">
+                        <span class="label-icon"></span>
+                        <span class="tooltip" data-tooltip="Network address">Network</span>
+                    </span>
+                    <span class="value">
+                        {{ hasil.network }}
+                        <button class="copy-btn" onclick="copyToClipboard('{{ hasil.network }}', this)">Copy</button>
+                    </span>
+                </div>
+                <div class="row">
+                    <span class="label">
+                        <span class="label-icon"></span>
+                        <span class="tooltip" data-tooltip="Broadcast address">Broadcast</span>
+                    </span>
+                    <span class="value">
+                        {{ hasil.broadcast }}
+                        <button class="copy-btn" onclick="copyToClipboard('{{ hasil.broadcast }}', this)">Copy</button>
+                    </span>
+                </div>
+                <div class="row">
+                    <span class="label">
+                        <span class="label-icon"></span>
+                        <span class="tooltip" data-tooltip="Jumlah host yang dapat digunakan">Usable Hosts</span>
+                    </span>
+                    <span class="value">
+                        {{ hasil.usable_host }}
+                        <button class="copy-btn" onclick="copyToClipboard('{{ hasil.usable_host }}', this)">Copy</button>
+                    </span>
+                </div>
+                <div class="row">
+                    <span class="label">
+                        <span class="label-icon"></span>
+                        <span class="tooltip" data-tooltip="Range IP yang dapat digunakan untuk host">Host Range</span>
+                    </span>
+                    <span class="value">
+                        {{ hasil.host_range }}
+                        <button class="copy-btn" onclick="copyToClipboard('{{ hasil.host_range }}', this)">Copy</button>
+                    </span>
+                </div>
+                {% if hasil.total_subnet %}
+                <div class="row">
+                    <span class="label">
+                        <span class="label-icon"></span>
+                        <span class="tooltip" data-tooltip="Total subnet yang tersedia">Total Subnet</span>
+                    </span>
+                    <span class="value">
+                        {{ hasil.total_subnet }}
+                        <button class="copy-btn" onclick="copyToClipboard('{{ hasil.total_subnet }}', this)">Copy</button>
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="history-section" id="historySection" style="display: none;">
+        <div class="history-header">
+            <span class="history-title">📜 History</span>
+            <button class="clear-history" onclick="clearHistory()">Clear All</button>
+        </div>
+        <div id="historyList"></div>
+    </div>
+</div>
+
+<script>
+    // Copy to clipboard function
+    function copyToClipboard(text, button) {
+        navigator.clipboard.writeText(text).then(() => {
+            const originalText = button.textContent;
+            button.textContent = '✓ Copied';
+            button.classList.add('copied');
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.classList.remove('copied');
+            }, 2000);
+        });
+    }
+
+    // Reset form
+    function resetForm() {
+        document.getElementById('calcForm').reset();
+        document.getElementById('ipInput').focus();
+    }
+
+    // History management
+    function saveToHistory(ip) {
+        let history = JSON.parse(localStorage.getItem('ipHistory') || '[]');
+        
+        // Remove duplicate if exists
+        history = history.filter(item => item !== ip);
+        
+        // Add to beginning
+        history.unshift(ip);
+        
+        // Keep only last 5
+        history = history.slice(0, 5);
+        
+        localStorage.setItem('ipHistory', JSON.stringify(history));
+        displayHistory();
+    }
+
+    function displayHistory() {
+        const history = JSON.parse(localStorage.getItem('ipHistory') || '[]');
+        const historySection = document.getElementById('historySection');
+        const historyList = document.getElementById('historyList');
+        
+        if (history.length === 0) {
+            historySection.style.display = 'none';
+            return;
+        }
+        
+        historySection.style.display = 'block';
+        historyList.innerHTML = history.map(ip => 
+            `<div class="history-item" onclick="document.getElementById('ipInput').value='${ip}'; document.getElementById('calcForm').submit();">
+                ${ip}
+            </div>`
+        ).join('');
+    }
+
+    function clearHistory() {
+        localStorage.removeItem('ipHistory');
+        displayHistory();
+    }
+
+    // Save to history on successful calculation
+    {% if hasil %}
+        saveToHistory('{{ hasil.ip }}/{{ hasil.prefix }}');
+    {% endif %}
+
+    // Load history on page load
+    displayHistory();
+
+    // Show loading on form submit
+    document.getElementById('calcForm').addEventListener('submit', function() {
+        document.getElementById('loading').classList.add('active');
+    });
+
+    // Focus on input when page loads
+    window.addEventListener('load', function() {
+        document.getElementById('ipInput').focus();
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + K to focus input
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            document.getElementById('ipInput').focus();
+        }
+        
+        // Escape to reset
+        if (e.key === 'Escape') {
+            resetForm();
+        }
+    });
+</script>
+
+</body>
+</html>
